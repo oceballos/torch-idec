@@ -1,12 +1,26 @@
 # Pytorch implementation of IDEC Algorithm of dimensionality reduction + clustering using autoencoders.
 
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.utils.data import  Dataset
 import numpy as np
 from sklearn.cluster import KMeans
 
+
+class UnsupervisedDataset(Dataset):
+    """Dataset for unsupervised learning - only returns data, no labels"""
+
+    def __init__(self, data):
+        self.data = torch.FloatTensor(data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
 
 
 class IDEC(nn.Module):
@@ -75,6 +89,10 @@ class IDEC(nn.Module):
 
         return x_reconstructed, q, z
 
+    def encode(self, x):
+        """Get latent representation only"""
+        return self.encoder(x)
+
 
 class ClusteringLayer(nn.Module):
     def __init__(self, n_clusters, z_dim, alpha=1.0):
@@ -128,7 +146,7 @@ class IDECTrainer:
 
         for epoch in range(epochs):
             total_loss = 0
-            for batch_idx, (data, _) in enumerate(dataloader):
+            for batch_idx, data in enumerate(dataloader):
                 data = data.view(data.size(0), -1).to(self.device)
 
                 optimizer.zero_grad()
@@ -157,7 +175,7 @@ class IDECTrainer:
         # Get all encoded features
         encoded_features = []
         with torch.no_grad():
-            for data, _ in dataloader:
+            for data in dataloader:
                 data = data.view(data.size(0), -1).to(self.device)
                 _, _, z = self.model(data)
                 encoded_features.append(z.cpu().numpy())
@@ -201,7 +219,7 @@ class IDECTrainer:
                 q_all = []
                 self.model.eval()
                 with torch.no_grad():
-                    for data, _ in dataloader:
+                    for data in dataloader:
                         data = data.view(data.size(0), -1).to(self.device)
                         _, q, _ = self.model(data)
                         q_all.append(q.cpu())
@@ -223,7 +241,7 @@ class IDECTrainer:
             self.model.train()
 
             batch_start = 0
-            for batch_idx, (data, _) in enumerate(dataloader):
+            for batch_idx, data in enumerate(dataloader):
                 data = data.view(data.size(0), -1).to(self.device)
                 batch_size = data.size(0)
 
@@ -264,13 +282,13 @@ class IDECTrainer:
 
     def predict(self, dataloader):
         """
-        Get cluster predictions
+        Get cluster predictions (hard assignments)
         """
         self.model.eval()
         predictions = []
 
         with torch.no_grad():
-            for data, _ in dataloader:
+            for data in dataloader:
                 data = data.view(data.size(0), -1).to(self.device)
                 _, q, _ = self.model(data)
                 pred = q.argmax(1)
@@ -278,4 +296,47 @@ class IDECTrainer:
 
         return np.concatenate(predictions)
 
+    def get_latent_representation(self, dataloader):
+        """
+        Get latent space representations (embeddings)
+        """
+        self.model.eval()
+        latent_features = []
 
+        with torch.no_grad():
+            for data in dataloader:
+                data = data.view(data.size(0), -1).to(self.device)
+                z = self.model.encode(data)
+                latent_features.append(z.cpu().numpy())
+
+        return np.concatenate(latent_features, axis=0)
+
+    def get_soft_assignments(self, dataloader):
+        """
+        Get soft cluster assignments (probabilities)
+        """
+        self.model.eval()
+        soft_assignments = []
+
+        with torch.no_grad():
+            for data in dataloader:
+                data = data.view(data.size(0), -1).to(self.device)
+                _, q, _ = self.model(data)
+                soft_assignments.append(q.cpu().numpy())
+
+        return np.concatenate(soft_assignments, axis=0)
+
+    def reconstruct(self, dataloader):
+        """
+        Get reconstructed data
+        """
+        self.model.eval()
+        reconstructions = []
+
+        with torch.no_grad():
+            for data in dataloader:
+                data = data.view(data.size(0), -1).to(self.device)
+                x_reconstructed, _, _ = self.model(data)
+                reconstructions.append(x_reconstructed.cpu().numpy())
+
+        return np.concatenate(reconstructions, axis=0)
