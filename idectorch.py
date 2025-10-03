@@ -41,6 +41,8 @@ class IDEC(nn.Module):
             self.act = nn.Sigmoid()
         elif activation == "tanh":
             self.act = nn.Tanh()
+        elif activation == "leakyrelu":
+            self.act = nn.LeakyReLU(0.1)
 
         # Encoder layers
         encoder_layers = []
@@ -189,7 +191,7 @@ class IDECTrainer:
         # Set cluster centers
         self.model.cluster_layer.weight.data = torch.tensor(kmeans.cluster_centers_).to(self.device)
 
-        return cluster_labels
+        return kmeans.labels_
 
     def train(self, dataloader, lr=0.001, epochs=100, update_interval=10,
               tol=1e-3, gamma=0.1):
