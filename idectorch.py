@@ -123,13 +123,17 @@ class ClusteringLayer(nn.Module):
         return q
 
 
-def target_distribution(q):
+def target_distribution(q, power=2.0, temperature=1.0):
     """
     Compute target distribution P using current soft assignments Q
-    P_ij = (q_ij²/f_j) / Σ_j'(q_ij'²/f_j')
+    P_ij = (q_ij^power/f_j) / Σ_j'(q_ij'^power/f_j')
     where f_j = Σ_i q_ij (cluster frequencies)
+
+    Args:
+        power: exponent for sharpening (lower = less sharp, try 1.5 or 1.0)
+        temperature: softening factor (higher = softer, try 2.0 or 3.0)
     """
-    weight = q ** 2 / q.sum(0)
+    weight = (q ** power / q.sum(0)) ** (1.0 / temperature)
     return (weight.t() / weight.sum(1)).t()
 
 
@@ -194,7 +198,7 @@ class IDECTrainer:
         return kmeans.labels_
 
     def train(self, dataloader, lr=0.001, epochs=100, update_interval=10,
-              tol=1e-3, gamma=0.1):
+              tol=1e-3, gamma=0.1, td_power = 2.0, td_temp = 1.0):
         """
         Train IDEC with joint optimization
 
@@ -227,7 +231,7 @@ class IDECTrainer:
                         q_all.append(q.cpu())
 
                 q_all = torch.cat(q_all, dim=0)
-                p_all = target_distribution(q_all).to(self.device)
+                p_all = target_distribution(q_all, power=td_power, temperature=td_temp).to(self.device)
 
                 # Check for convergence
                 y_pred = q_all.argmax(1).numpy()
