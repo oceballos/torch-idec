@@ -201,7 +201,6 @@ class IDECTrainer:
               tol=1e-3, gamma=0.1, td_power = 2.0, td_temp = 1.0):
         """
         Train IDEC with joint optimization
-
         Args:
             gamma: weight for reconstruction loss (reconstruction_loss_weight)
         """
