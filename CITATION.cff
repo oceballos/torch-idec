@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Ceballos"
+    given-names: "Osvaldo"
+    orcid: "https://orcid.org/0009-0007-3719-5306"
+title: "Torch IDEC"
+version: 0.1.2
+date-released: 2025-09-30
+url: "https://github.com/oceballos/torch-idec"
