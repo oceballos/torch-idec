@@ -142,12 +142,18 @@ class IDECTrainer:
         self.model = model.to(device)
         self.device = device
 
-    def pretrain(self, dataloader, lr=0.001, epochs=200):
+    def pretrain(self, dataloader, lr=0.001, epochs=200, optimizer = 'adam'):
         """
         Pretrain the autoencoder
         """
         print("=== Pretraining Autoencoder ===")
-        optimizer = optim.Adam(self.model.parameters(), lr=lr)
+        if optim == 'adam':
+            optimizer = optim.Adam(self.model.parameters(), lr=lr)
+        elif optim == 'sgd':
+            optimizer = optim.SGD(self.model.parameters(), lr=lr)
+        elif optim == 'adamw':
+            optimizer = optim.AdamW(self.model.parameters(), lr=lr)
+
         self.model.train()
 
         for epoch in range(epochs):
