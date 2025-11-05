@@ -43,6 +43,8 @@ class IDEC(nn.Module):
             self.act = nn.Tanh()
         elif activation == "leakyrelu":
             self.act = nn.LeakyReLU(0.1)
+        elif activation == "softmax":
+            self.act = nn.Softmax(dim=1)
 
         # Encoder layers
         encoder_layers = []
