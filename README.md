@@ -67,6 +67,17 @@ reconstructions = trainer.reconstruct(dataloader)
 ~~~
 
 ## Dependencies
-Scikit Learn, 
-PyTorch
+torch>=2.0.0
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.2.0
+scipy>=1.10.0
 
+## References
+Guo, Xifeng et al. “Improved Deep Embedded Clustering with Local Structure Preservation.” International Joint Conference on Artificial Intelligence (2017).
+
+## Licence
+MIT
+
+## Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
