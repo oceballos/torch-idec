@@ -3,7 +3,7 @@
 from idectorch import IDEC, IDECTrainer, UnsupervisedDataset
 from sklearn.metrics import normalized_mutual_info_score, adjusted_rand_score
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 
 
 # Example usage
